@@ -68,6 +68,6 @@ int main(){
 
         (2) Use BFS to check if the picked weight is possible
 
-        (1)O(logN) * (2)O(M)
-        O(MlogN)
+        (1)O(lgC) * (2)O(N+M)
+        O(NlgC)
 */
