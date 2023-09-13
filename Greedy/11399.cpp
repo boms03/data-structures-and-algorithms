@@ -10,12 +10,11 @@ int main(){
         cin >> arr[i];
     }
     sort(arr,arr+n);
-    cnt = arr[0];
     for(int i=1;i<n;i++){
-        cnt+=arr[i-1]+arr[i];
+        arr[i-1]+arr[i];
         arr[i]+=arr[i-1];
     }
-    cout << cnt << '\n';
+    cout << arr[n-1] << '\n';
 }
 
 /*
