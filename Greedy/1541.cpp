@@ -31,7 +31,8 @@ int main(){
 
 /*
     Approach:
-        At an operator's turn, check if it is currently inside minuns bracket and calculate
+        At an operator's turn, check if it is currently inside minuns bracket and calculate.
+        To make minimun sum, substract all numbers after - operator
 
         1. Calculate when +,-,or\0 found
             1. if it is inside - bracket, subtract the number in temp string.
