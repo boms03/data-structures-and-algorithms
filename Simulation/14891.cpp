@@ -8,9 +8,9 @@ int n,a,b;
 int isRotate[4];
 
 void rotate(int t, int d){
-    if(d==1){
+    if(d==1){ // clockwise
         v[t] = v[t].substr(7)+v[t].substr(0,7);
-    } else {
+    } else if(d==-1) {
         v[t] = v[t].substr(1,7)+v[t].substr(0,1);
     }
 }
@@ -38,7 +38,6 @@ void turn(int t, int d){
     for(int i=0;i<4;i++){
         rotate(i,isRotate[i]);
     }
-
 }
 
 int main(){
@@ -50,8 +49,8 @@ int main(){
 
     for(int i=0; i<n;i++){
         cin >> a >> b;
+        for(int i=0;i<4;i++) isRotate[i]=0;
         turn(a-1,b);
-        memset(isRotate,0,sizeof(isRotate));
     }
 
     int cnt = 0;
@@ -62,3 +61,11 @@ int main(){
     }
     cout << cnt << '\n';
 }
+
+/*
+    Approach:
+        Use recursion to check if idx-1, idx+1 gear needs to be rotated.
+        Each gear is only affected by adjacent gears, so start from the target gear and spread to left or right directions
+    Time Complexity:
+        O(N)
+*/
