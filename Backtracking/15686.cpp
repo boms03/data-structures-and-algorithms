@@ -53,5 +53,5 @@ int main(){
         After picking stores in the pickChicken vector, iterate houses and pickChicken stores to calculate minimum distances.
         Then decide whether to update the previously updated minimum distance or not.
     Time Complexiy:
-        O(13C6 * 50*13)
+        13C6 * 50*13 < 1e8
 */
