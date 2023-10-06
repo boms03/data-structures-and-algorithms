@@ -38,6 +38,9 @@ void turn(int t, int d){
     for(int i=0;i<4;i++){
         rotate(i,isRotate[i]);
     }
+    for(int i=0;i<4;i++){
+        cout << v[i] << '\n';
+    }
 }
 
 int main(){
@@ -54,10 +57,10 @@ int main(){
     }
 
     int cnt = 0;
-    int mul = 1;
     for(int i=0;i<4;i++){
-        cnt+= (v[i][0]-'0') *mul;
-        mul *=2;
+        if(v[i][0]-'0'==1){
+            cnt+= pow(2,i);
+        }
     }
     cout << cnt << '\n';
 }
