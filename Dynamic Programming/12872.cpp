@@ -18,6 +18,7 @@ int main(){
     }
     cout << dp[p][n] << endl;
 }
+
 /*
     Approach:
         Lets say I picked i songs and there are j different songs. 
