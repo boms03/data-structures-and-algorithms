@@ -18,8 +18,21 @@ int main(){
     }
     cout << dp[p][n] << endl;
 }
-
 /*
-    approach: 
-    1) put different song 2) put already put song
+    Approach:
+        Lets say I picked i songs and there are j different songs. 
+        When adding a song I have two options 
+        1) add a song not in the playlist
+        2) add an already existing song 
+
+        For the case 1, dp[i][j]=dp[i-1][j-1]*(n-j+1)
+        n-j+1 is the number of songs not in the playlist
+        pick one song from n-j+1 and add = (n-j+1)C1
+
+        For the case 2, dp[i][j]+=dp[i-1][j]*(j-m)
+        But the condition is that there must be at least m+1 different songs in the playlist.
+        This is because we need m different songs in between same songs. 
+
+    Time Complexity:
+        O(N) 1<=N<=100
 */
