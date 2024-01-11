@@ -65,7 +65,6 @@ int main(){
 }
 
 /*
-
     Approach:
         [1] Count the frequency of 0~9 digits in the input
         [2] While loop until all the frequency of digits are 0
