@@ -48,4 +48,7 @@ int main(){
         Iterate the queue everytime to check if there are higher priorities behind the front
     Time Complexity:
         O(N^2)
+    Improvement:
+        Use priority queue to check if the front has the highest priority.
+        O(NlogN)
 */
