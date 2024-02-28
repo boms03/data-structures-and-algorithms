@@ -47,12 +47,10 @@ int main(){
 
 /*
     Approach:
-        Use floyd warshall to record context of every two incidents.
-        The distance between two incidents equals the number of incidents between + two incidents.
-        But we only need to know which incident (A or B) happened beforehand
-        1] if dist[A][B] is not inf -> A happened before B
-        2] if dist[B][A] is not inf -> B happened before A
-        3] if both dist[A][B] and dist[B][A] are inf -> we do not know
+        Use floyd warshall as it requires all pair distances.
+        Calculate the minimum round trip distance using the minimum distance info
+        ex) Minimum of every two pair (a to b) + (b to a)
+            (!) If the minimum distance is inf, it means no available round trip (-1)
     Time Complexity:
         O(N^3)
 */
