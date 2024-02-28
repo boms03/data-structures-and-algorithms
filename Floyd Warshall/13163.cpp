@@ -5,8 +5,8 @@
 using namespace std;
 
 int n,m,r,k;
-int nNaeilo[101][101];
-int yNaeilo[101][101];
+double nNaeilo[101][101];
+double yNaeilo[101][101];
 map<string,int>cities;
 vector<string>trip;
 
@@ -54,7 +54,7 @@ int main(){
 
     for(int i=0; i<k; i++){
         string type, start, dest;
-        int cost;
+        double cost;
         cin >> type >> start >> dest >> cost;
         int s = cities[start];
         int d = cities[dest];
@@ -78,7 +78,7 @@ int main(){
 
     floyd();
 
-    int sumY = 0, sumN = 0;
+    double sumY = 0, sumN = 0;
 
     for(int i=0;i<m-1;i++){
         int s = cities[trip[i]];
