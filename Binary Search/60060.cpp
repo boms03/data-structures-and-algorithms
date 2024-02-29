@@ -58,7 +58,7 @@ vector<int> solution(vector<string> words, vector<string> queries) {
 
 /*
     Approach:
-        Replace ?s with 'a' or 'b' to set lower bound and upper bound to count the number of string in between the range
+        Replace ?s with 'a' or 'z' to set lower bound and upper bound to count the number of string in between the range
         [!] If a query starts with ?, it should be reversed
             ex) if ??bc becomes aabc, it is reversed to cbaa , cbzz and find string in the range cbaa<=string<=cbzz
             The reason why it should be reversed is that the range aabc<=string<=zzbc does not require the string to have "bc"
