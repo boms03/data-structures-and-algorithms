@@ -1,64 +1,49 @@
 #include<iostream>
 #include<vector>
-#include<string>
 using namespace std;
-int n,k;
-vector<string>s;
-int alpha[27];
-int ans;
-int mx=0;
 
-int check(){
-    ans = 0;
-    bool canR;
-    for(int i=0; i<s.size();i++){
-        canR = true;
-        for(int j=0; j<s[i].length(); j++){ // check if all alphabets in the word are learned
-            if (alpha[s[i][j]-'a']==0){
-                canR = false;
-                break;
-            }
+int learned = 0;
+int n,k;
+vector<int>words;
+int ans = 0;
+
+void btk(int cur_idx,int cnt_learned){
+    if(cnt_learned == k){
+        int cnt = 0;
+        for(int i=0;i<words.size();i++){
+            if((learned & words[i]) == words[i]) cnt++;
         }
-        if(canR) ans++;
-    }
-    return ans;
-}
-void btk(int next, int idx){
-    if(idx==k){
-        mx=max(mx,check());
+        ans = max(ans,cnt);
         return;
     }
-    for(int i=next;i<26;i++){
-        if(alpha[i]) continue;
-        alpha[i]=1;
-        btk(i+1,idx+1);
-        alpha[i]=0;
+    for(int i=cur_idx; i<26;i++){
+        if((learned >> i) & 1) continue;
+        learned |= 1 << i; 
+        btk(i+1,cnt_learned+1);
+        learned &= ~(1 << i); 
     }
 }
 int main(){
     cin >> n >> k;
-    if(k<5){ // every word involves a,n,t,i,c meaning k = 5 is the minimum requirement 
-        cout << 0 << endl;
-        exit(0);
-    }
-    k-=5;
-    alpha['a'-'a']=1;
-    alpha['n'-'a']=1;
-    alpha['t'-'a']=1;
-    alpha['i'-'a']=1;
-    alpha['c'-'a']=1;
     for(int i=0;i<n;i++){
-        string ss;
-        cin >> ss;
-        s.push_back(ss);
+        string s;
+        cin >> s;
+        int s_to_i = 0;
+        for(int j=0;j<s.size();j++){
+            s_to_i |= 1 << (s[j]-'a'); 
+        }
+        words.push_back(s_to_i);
     }
-    btk(0,0);
-    cout << mx << '\n';
+    k = k-5;
+    if(k<0){
+        cout << 0 << '\n';
+    } else{
+        learned |= 1 << ('a'-'a');
+        learned |= 1 << ('n'-'a');
+        learned |= 1 << ('t'-'a');
+        learned |= 1 << ('i'-'a');
+        learned |= 1 << ('c'-'a');
+        btk(0,0);
+        cout << ans << '\n';
+    }
 }
-
-/*
-    N : number of words
-    K : number of alphabets to learn
-    L : length of words
-    O((21)C(K-5)*N*L)
-*/
