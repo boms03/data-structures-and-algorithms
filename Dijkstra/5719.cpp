@@ -1,94 +1,101 @@
 #include<iostream>
 #include<vector>
 #include<queue>
-#include<cstring>
 #include<climits>
+#include<cstring>
 using namespace std;
-typedef pair<int,int> pii;
+typedef pair<int, int> pii;
+int n, m, s, d;
+int dist[501];
+bool deleted[501][501];
+vector<vector<pii>>v;
+vector<vector<int>>path;
 
-vector<vector<pii>> info;
-vector<int>dist;
-vector<vector<int>>parent;
-bool check[501];
+void dijkstra() {
+	priority_queue<pii, vector<pii>, greater<pii>>pq;
+	fill(&dist[0], &dist[500], INT_MAX);
+	bool visited[500] = { false, };
+	pq.push({ 0, s });
+	dist[s] = 0;
+	visited[s] = true;
+	while (!pq.empty()) {
+		pii cur = pq.top();
+		int cur_cost = cur.first;
+		int cur_node = cur.second;
+		visited[cur_node] = true;
+		pq.pop();
 
-int n,m;
+		for (int i = 0; i < v[cur_node].size(); i++) {
+			
+			int next_cost = v[cur_node][i].second;
+			int next_node = v[cur_node][i].first;
 
-void dijkstra(int start, int end){
-    priority_queue<pii,vector<pii>,greater<pii>> pq;
-    pq.push({0,start});
-    while(!pq.empty()){
-        pii cur = pq.top();
-        int cur_dist = cur.first;
-        int cur_idx = cur.second;
-        if (cur_idx==end) break;
-        if (dist[cur_idx]<cur_dist) continue;
-        pq.pop();
-        for(int i=0;i<info[cur_idx].size();i++){
-            pii next_info = info[cur_idx][i];
-            int next_dist = next_info.second;
-            int next_idx = next_info.first;
-            if (next_dist == -1) continue;
-            if(dist[next_idx] > cur_dist+next_dist){
-                dist[next_idx] = cur_dist+next_dist;
-                pq.push({dist[next_idx],next_idx});
-                parent[next_idx].clear();
-                parent[next_idx].push_back(cur_idx);
-            } else if(dist[next_idx] == cur_dist+next_dist){
-                parent[next_idx].push_back(cur_idx);
-            }
-        }
-    }
+			if (visited[next_node]) continue;
+			if (deleted[cur_node][next_node]) continue;
+
+			if (dist[next_node] > cur_cost + next_cost) {
+				path[next_node].clear();
+				pq.push({ cur_cost + next_cost, next_node });
+				path[next_node].push_back(cur_node);
+				dist[next_node] = cur_cost + next_cost;
+			}
+			else if (dist[next_node] == cur_cost + next_cost) {
+				path[next_node].push_back(cur_node);
+			}
+		}
+	}
 }
 
-void delete_cur(int from_idx, int to_idx){
-    for (int i = 0; i < info[from_idx].size(); i++) {
-        if (info[from_idx][i].first == to_idx){
-            info[from_idx][i].second = -1;
-            break;
-        }
-    }
-}
-void btk_remove(int destination){
-    memset(check,false,sizeof(check));
-    queue<int>q;
-    q.push(destination);
-    while(!q.empty()){
-        int cur = q.front();
-        q.pop();
-        if(check[cur]) continue;
-        check[cur] = true;
-        for (int i=0;i<parent[cur].size();i++){
-            delete_cur(parent[cur][i],cur);
-            q.push(parent[cur][i]);
-        }
-    }
+// 최단 경로가 여러개라면 bfs로 지우기
+// 1 - 2 - (3or4) - 5 같은 경우 뒤에서부터 지우기
+void delete_path() {
+    bool visited[500] = { false, };
+	  queue<int>q;
+	  q.push(d);
+	  visited[d] = true;
+	  while (!q.empty()) {
+		int to = q.front();
+		q.pop();
+		for (int i = 0; i < path[to].size(); i++) {
+			int from = path[to][i];
+			if(!visited[from]) q.push(from);
+			deleted[from][to] = true;
+			visited[from] = true;
+		}
+	}
 }
 
-int main(){
-    ios::sync_with_stdio(false);
-    cin.tie(NULL);
-    cout.tie(NULL);
-    while(cin >> n >> m){
-        if(!n && !m) break;
-        int s,d;
-        cin >> s >> d;
-        info.resize(n+1);
-        parent.resize(n+1);
-        dist.assign(n+1,INT_MAX);
-        for(int i=0; i<m;i++){
-            int a,b,c;
-            cin >> a >> b >> c;
-            info[a].push_back({b,c});
-        }
-        dijkstra(s,d);
-        btk_remove(d);
-        dist.assign(n+1,INT_MAX);
-        dijkstra(s,d);
-        if(dist[d]==INT_MAX) cout << -1 << '\n';
-        else cout << dist[d] << '\n';
+int main() {
+	ios::sync_with_stdio(false);
+	cin.tie(NULL);
+	cout.tie(NULL);
+	while (true) {
+		cin >> n >> m;
+		if (n == 0 && m == 0) break;
+		cin >> s >> d;
 
-        info.clear();
-        parent.clear();
-    }
+		v.assign(n + 1, vector<pii>());
+		path.assign(n + 1, vector<int>());
+
+		for (int i = 0; i < m; i++) {
+			int a, b, c;
+			cin >> a >> b >> c;
+			v[a].push_back({ b,c });
+		}
+
+    fill(&deleted[0][0], &deleted[500][500], false);
+        
+    //O(elogv)
+		dijkstra();
+		
+		//O(e+v)
+		delete_path();
+		
+		//O(elogv)
+		dijkstra();
+
+		if (dist[d] == INT_MAX) cout << -1 << '\n';
+		else cout << dist[d] << '\n';
+	}
 
 }
