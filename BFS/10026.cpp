@@ -60,6 +60,7 @@ int main(){
             }
         }
     }
+    
     memset(visited,0,sizeof(visited));
 
     int sCnt = 0;
