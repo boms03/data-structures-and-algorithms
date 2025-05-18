@@ -1,101 +1,79 @@
-#include<iostream>
+#include <string>
+#include <cstring>
+#include <queue>
+#include <iostream>
+#include<vector>
+#define pipii pair<int,pair<int,int>>
+
 using namespace std;
-
-
-int n,m;
-bool done = false;
-int y,x,d;
+int n,m,rx,ry,d;
 int map[51][51];
-int dx[4]={-1,1,0,0};
-int dy[4]={0,0,-1,1};
-// 0북 1동 2남 3서
-
-void rotate(int current_direction){
-    if(current_direction==0){
-        d = 3;
-    } else {
-        d--;
+bool visited[4][51][51];
+int dx[4]={0,1,0,-1};
+int dy[4]={-1,0,1,0};
+int cnt = 0;
+void btk(int x, int y, int dir){
+    
+    //cout << "방향 " << dir << endl;
+    //1 청소 가능하면 청소하기
+    if(map[y][x]==0){
+        map[y][x]=2;
+        cnt++;
+        // for(int i=0;i<n;i++){
+        //     for(int j=0;j<m;j++){
+        //         cout << map[i][j] << " ";
+        //     }
+        //     cout << endl;
+        // }
+        // cout << endl;
+    }
+    
+    bool cleaned = true;
+    //주변 4칸 청소 여부 확인
+    for(int i=0;i<4;i++){
+        int nx = x + dx[i];
+        int ny = y + dy[i];
+        if(nx<0 || nx>=m || ny<0 || ny >=n || map[ny][nx]==1) continue;
+        if(map[ny][nx]==0){
+            //cout << "청소 필요"<<endl;
+            cleaned = false;
+        }
+    }
+    
+    // 2 모두 청소됨
+    if(cleaned){
+        //cout << map[y-dy[dir]][x-dx[dir]] << endl;
+        if(y-dy[dir]<0 || x-dx[dir] <0 || map[y-dy[dir]][x-dx[dir]]==1){
+            cout << cnt;
+            exit(0);
+        }
+        else{
+            //cout << "후진"<<endl;
+            btk(x-dx[dir],y-dy[dir],dir);
+        }
+    } else{ // 3 청소 안된 칸 발견
+        dir = (dir+3)%4;
+        //cout << "3 회전 " << dir <<endl;
+        if(y+dy[dir]>=n || x+dx[dir]>=m || map[y+dy[dir]][x+dx[dir]]==0){
+            //cout << "3 전방청소 안함 발견 " <<endl;
+            btk(x+dx[dir],y+dy[dir],dir);
+        } else{
+            //cout << "3 회전만함" <<endl;
+           btk(x,y,dir);
+        }
     }
 }
 
-void move(int current_direction, int move_direction){
-    if(current_direction==0){
-        if(move_direction==1){
-            if(y-1<0||map[y-1][x]==1||map[y-1][x]==3) return;
-            y-=1;
-        } else{
-            if(y+1>=n||map[y+1][x]==1) done = true;
-            y+=1;
-        }
-    }
-    else if(current_direction==1){
-        if(move_direction==1){
-            if(x+1>=m||map[y][x+1]==1||map[y][x+1]==3) return;
-            x+=1;
-        } else{
-            if(x-1<0||map[y][x-1]==1) done = true;
-            x-=1;
-        }
-    }
-    else if(current_direction==2){
-        if(move_direction==1){
-            if(y+1>=n||map[y+1][x]==1||map[y+1][x]==3) return;
-            y+=1;
-        } else{
-            if(y-1<0||map[y-1][x]==1) done = true;
-            y-=1;
-        }
-    }
-    else if(current_direction==3){
-        if(move_direction==1){
-            if(x-1<0||map[y][x-1]==1||map[y][x-1]==3) return;
-            x-=1;
-        } else{
-            if(x+1>=m||map[y][x+1]==1) done = true;
-            x+=1;
-        }
-    }
-}
-
-int ans = 0;
-
-int main(){
+int main() {
+    
     cin >> n >> m;
-    cin >> y >> x >> d;
-
+    cin >> ry >> rx >> d;
+    
     for(int i=0;i<n;i++){
         for(int j=0;j<m;j++){
             cin >> map[i][j];
         }
     }
-
-    while(!done){
-
-        if(map[y][x]==0){
-            map[y][x]=3;
-            ans++;
-        }
-
-        bool nCleaned = true;
-
-        for(int i=0;i<4;i++){
-
-            int nx = x + dx[i];
-            int ny = y + dy[i];
-
-            if(nx<0 || nx >=m || ny<0 || ny >=n) continue;
-
-            if(map[ny][nx]==0){
-                nCleaned = false;
-                rotate(d);
-                move(d,1);
-                break;
-            }
-        }
-
-        if(nCleaned){
-            move(d,0);
-        }
-    }
-    cout << ans << '\n';
+    
+    btk(rx,ry,d);
 }
