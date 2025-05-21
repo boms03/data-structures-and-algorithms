@@ -1,69 +1,99 @@
-#include<iostream>
-#include<vector>
-#include<cmath>
-#include<queue>
+#include <string>
+#include <vector>
+#include <queue>
+#include <climits>
+#include <algorithm>
+#include <iostream>
+#define pii pair<int,int>
 using namespace std;
-typedef pair<double, double> pdd;
-typedef pair<double,int> pdi;
 
-int n;
-vector<pdd>coordinates;
-vector<vector<pair<double,int>>>edges;
-double dist[103];
+int parent[201];
+vector<vector<pii>>adj_list;
+// int dist[201];
+int dist[201][201];
 
-void dijkstra(int start){
-    fill(dist, dist + 103, -1.0);
-    priority_queue<pdi,vector<pdi>,greater<pdi>> pq;
-    pq.push({0,start});
-    while(!pq.empty()){
-        pdi cur = pq.top();
-        int cur_idx = cur.second;
-        double cur_distance = cur.first;
-        pq.pop();
-        for(int i=0; i<edges[cur_idx].size();i++){
-            double next_distance = edges[cur_idx][i].first;
-            int next_idx = edges[cur_idx][i].second;
-            if(dist[next_idx]==-1 || cur_distance+next_distance < dist[next_idx]){
-                dist[next_idx] = cur_distance+next_distance;
-                pq.push({dist[next_idx],next_idx});
-            }
-        }
-    }
-}
-double getDistance(pdd a, pdd b){
-    return sqrt(pow(a.first-b.first,2)+pow(a.second-b.second,2));
-}
-int main(){
-
-    ios::sync_with_stdio(false);
-    cin.tie(NULL);
-    cout.tie(NULL);
+// void dijkstra(int s){
+//     fill(dist,dist+201,INT_MAX);
     
-    for(int i=0;i<2;i++){
-        double x,y;
-        cin >> x >> y;
-        coordinates.push_back({x,y});
-    }
-    cin >> n;
-    for(int i=0;i<n;i++){
-        double x,y;
-        cin >> x >> y;
-        coordinates.push_back({x,y});
-    }
-    edges.resize(n+3);
-    for(int i=0;i<n+2;i++){
-        for(int j=0;j<n+2;j++){
-            if(i==j) continue;
-            double distance = getDistance(coordinates[i],coordinates[j]);
-            double walk_time = distance/5;
-            double canon_time = 2 + abs(distance-50)/5;
-            if(i==0 || i==1){
-                edges[i].push_back({walk_time,j});
-            } else{
-                edges[i].push_back({min(canon_time,walk_time),j});
+//     dist[s]=0;
+//     parent[s]=-1;
+//     priority_queue<pii,vector<pii>,greater<pii>>pq;
+//     pq.push({0,s});
+//     while(!pq.empty()){
+//         pii cur = pq.top();
+//         int cost = cur.first;
+//         int node = cur.second;
+//         pq.pop();
+    
+//         if(dist[node]<cost) continue;
+        
+//         for(pii next_info: adj_list[node]){
+//             int next_cost = cost + next_info.first;
+//             int next_node = next_info.second;
+//             if(dist[next_node]>next_cost){
+//                 //cout << node << " " << next_node << endl;
+//                 dist[next_node]=next_cost;
+//                 pq.push({next_cost,next_node});
+//                 parent[next_node] = node;
+//             }
+//         }
+//     }
+// }
+
+void floyd(int n){
+    for(int k=1;k<=n;k++){
+        for(int i=1;i<=n;i++){
+            for(int j=1;j<=n;j++){
+                if(dist[i][k] != INT_MAX && dist[k][j] != INT_MAX){
+                    int cost = dist[i][k]+dist[k][j];
+                    if(dist[i][j]>cost) dist[i][j]=cost;
+                }
             }
         }
     }
-    dijkstra(0);
-    cout << dist[1] << '\n';
+}
+
+int solution(int n, int s, int a, int b, vector<vector<int>> fares) {
+    fill(&dist[0][0],&dist[200][200],INT_MAX);
+    for(int i=1; i<=n; i++) {
+        dist[i][i] = 0;
+    }
+    for(vector<int> fare: fares){
+        int c = fare[0];
+        int d = fare[1];
+        int f = fare[2];
+        dist[c][d]=f;
+        dist[d][c]=f;
+    }
+    floyd(n);
+    int without_share = dist[s][a] + dist[s][b];
+    int ans = without_share;
+    for(int i=1;i<=n;i++){
+        if(i==s)continue;
+        if(dist[s][i] != INT_MAX && dist[i][a] != INT_MAX && dist[i][b] != INT_MAX){
+            int share = dist[s][i]+dist[i][a]+dist[i][b];
+            ans = ans > share ? share : ans;
+        }
+    }
+    
+    // adj_list.clear();
+    // adj_list.resize(n+1);
+    // for(vector<int> fare: fares){
+    //     int c = fare[0];
+    //     int d = fare[1];
+    //     int f = fare[2];
+    //     adj_list[c].push_back({f,d});
+    //     adj_list[d].push_back({f,c});
+    // }
+    // dijkstra(s);
+    // int without_share = dist[a] + dist[b];
+    // int ans = without_share;
+    // for(int i=1;i<=n;i++){
+    //     if(i==s)continue;
+    //     dijkstra(i);
+    //     int share = dist[s]+dist[a]+dist[b];
+    //     ans = ans > share ? share : ans;
+    // }
+    
+    return ans;
 }
