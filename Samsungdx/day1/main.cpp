@@ -89,143 +89,179 @@ int main()
 	return 0;
 }
 
-#include <iostream>  // Add this for cout
-#include <cstring>   // Add this for memset
-using namespace std; // Add this for cout without std::
+#include <iostream>  
+#include <cstring>  
+using namespace std; 
 
 struct node {
 	char data;
 	node* next;
 	node* prev;
-}Node[90002];
+} Node[90002];
 
-int node_cnt;
-int R,C;
-node* head;
+int w,h;
+int row_alpha[301][27];
+int cnt_node;
+node* row_head[301];
+int row_cnt[301];
+node* row_tail[301];
 node* cursor;
-node* line[301];
-int line_alph[301][30];
-int cur_loc;
+int cur_row;
 
-void printAll() {
-	node* cur = head;
-	int i = 0;
-	while (cur->next != nullptr) {
-		cur = cur->next;
-		if (i % R == 0) cout << "\n";
-		cout << cur->data << " ";
-		i++;
+void print(){
+	for(int i=0;i<h;i++){
+		node* cur = row_head[i];
+		while(cur!=nullptr){
+			cout << cur->data << " ";
+			cur=cur->next;
+		}
+		cout << endl;
 	}
-	//cout << "\nnum of nodes : " << node_cnt << "\n";
-	cout << "\t\t\t cursor's Left : " << cursor->data<< "\n";
-	for (int i = 0; line[i]!=nullptr; i++) {
-		//cout << "line " << i << " : " << line[i]->data << "\n";
-		cout << "Line " << i << " count : " << line_alph[i]['e' - 'a'] << "\n";
-	}
-}
-
-node* getNode(char c) {
-	Node[++node_cnt].data = c;
-	Node[node_cnt].next = nullptr;
-	Node[node_cnt].prev = nullptr;
-	return &Node[node_cnt];
 }
 
 void init(int H, int W, char mStr[])
 {
-	R = W;
-	C = H;
-	for (int i = 1; i < H; i++) {
-		line[i] = nullptr;
-	}
-	memset(line_alph,0,sizeof(line_alph));
-	node_cnt = -1;
+	cout << "init" << endl;
+	w = W;
+	h = H;
+	cnt_node = 0;
+	memset(row_head,0,sizeof(row_head));
+	memset(row_tail,0,sizeof(row_tail));
+	memset(row_alpha,0,sizeof(row_alpha));
+	memset(row_cnt,0,sizeof(row_cnt));
+	memset(Node,0,sizeof(Node));
 
-	head = getNode('\0');
-	line[0] = head;
-	cursor = head;
-	cur_loc = 0;
-	
-	node* cur = head;
+	bool end;
+	for(int i=0;i<H && !end;i++){
+		row_head[i] = &Node[cnt_node];
+		node* prev = nullptr;
+		bool notHead = false;
+		for(int j=0;j<W && !end;j++){
+			char cur_char = mStr[i*W+j];
+			if(cur_char=='\0'){
+				end = true;
+				break;
+			}
+			Node[cnt_node].data = cur_char;
+			Node[cnt_node].next = nullptr;
 
-	node* tmp;
-	for (int i = 0; i < H * W; i++) {
-		if (mStr[i] == '\0') break;
-		tmp = getNode(mStr[i]);
-		line_alph[i / R][mStr[i] - 'a']++;
-		if (node_cnt % R == 0) {
-			line[node_cnt / R] = tmp;
+			row_alpha[i][cur_char-'a']++;
+
+			if(notHead){
+				Node[cnt_node].prev = prev;
+				prev->next = &Node[cnt_node];
+			}
+			else{
+				notHead = true;
+			}
+			prev = &Node[cnt_node];
+			cnt_node++;
+			row_cnt[i]++;
 		}
-		cur->next = tmp;
-		tmp->prev = cur;
-		cur = cur->next;
+		row_tail[i]= &Node[cnt_node];
+		prev->next = &Node[cnt_node];
+		Node[cnt_node].prev = prev;
+		Node[cnt_node].next = nullptr;
+		cnt_node++;
 	}
-	
+
+	//print();
+	cursor = row_head[0];
+	cur_row = 0;
 }
 
 void insert(char mChar)
 {
-	node* newNode = getNode(mChar);
-	line_alph[cur_loc / R][mChar - 'a']++;
-	if (node_cnt % R == 1) {
-		node* tmp = line[(node_cnt / R) - 1];
-		while (tmp->next != nullptr)
-			tmp = tmp->next;
-		line[(node_cnt / R)] = tmp;
+	cout << "insert " << mChar << endl;
+	cout << cur_row << " " << cursor->data << endl;
+	Node[cnt_node].next = cursor;
+	Node[cnt_node].prev = cursor->prev;
+	Node[cnt_node].data = mChar;
+	row_alpha[cur_row][mChar-'a']++;
+
+	if(!cursor->prev){
+		row_head[cur_row] = &Node[cnt_node];
 	}
-	newNode->next = cursor->next;
-	newNode->prev = cursor;
-	if(cursor->next != nullptr)
-		cursor->next->prev = newNode;
-	cursor->next = newNode;
-	cursor = cursor->next;
-	cur_loc++;
-	
-	for (int i = ((cur_loc-1)/R) + 1; line[i] != nullptr; i++) {
-		if (i == 0) continue;
-		int a = line[i]->data;
-		line[i] = line[i]->prev;
-		line_alph[i][a-'a']++;
-		line_alph[i-1][a - 'a']--;
+	else {
+		cursor->prev->next = &Node[cnt_node];
 	}
+	cursor->prev = &Node[cnt_node];
+
+	cnt_node++;
+
+	for(int i=cur_row;i<h;i++){
+		if(row_cnt[i]<w){
+			row_cnt[i]++;
+			break;
+		}
+
+		node* tail = row_tail[i];
+		node* new_tail;
+		node* new_head;
+
+		if(tail->prev){
+			new_tail = tail->prev->prev;
+			new_head = tail->prev;
+			tail->prev= new_tail;
+			new_tail->next = tail;
+		}
+		node* cur_head = row_head[i+1];
+
+		if(cur_head){
+			cur_head->prev = new_head;
+			new_head->next = cur_head;
+		} else {
+			row_tail[i+1]=new_head;
+		}
+		new_head->prev = nullptr;
+		row_head[i+1]=new_head;
+		row_alpha[i][new_head->data-'a']--;
+		row_alpha[i+1][new_head->data-'a']++;
+		//cout << new_head->data << " got moved!" << endl;
+	}
+	print();
+	cout << cur_row << " " << cursor->data << endl;
+
+
 }
 
 char moveCursor(int mRow, int mCol)
 {
-	int loc = (mRow-1) * R + mCol-1;
-	if (loc >= node_cnt) {
-		while (cursor->next != nullptr) {
-			cursor = cursor->next;
-		}
-		cur_loc = node_cnt;
-
+	cout << "move " << mRow << " " << mCol << endl;
+	cur_row = mRow-1;
+	if(row_cnt[cur_row] < mCol){
+		cursor = row_tail[cur_row];
+		//cout << '$' << endl;
 		return '$';
 	}
-	else{
-		cur_loc = loc;		
-		cursor = line[loc/R];
-		loc = loc % R;
-		while (loc--) {
-			cursor = cursor->next;
-		}
-		char res = cursor->next->data;
-		return res;
-	}
-
+	cursor = row_head[cur_row];
+	int move = mCol-1;
+	while(move-- && cursor->next != row_tail[cur_row]) cursor = cursor->next;
+	//cout << cursor->data << endl;
+	print();
+	return cursor->data;
 }
 
 int countCharacter(char mChar)
 {
-	int res =0;
-	node* cur = cursor;
-	while (cur != line[cur_loc/R + 1] && cur->next !=nullptr) {
-		cur = cur->next;
-		if (cur->data == mChar)
-			res++;
-	}
-	for (int i = cur_loc / R + 1; line[i] != nullptr; i++) {
-		res += line_alph[i][mChar - 'a'];
+	print();
+	cout << "cnt " << mChar << endl;
+	cout << cur_row << endl;
+	cout << cursor->data << endl;
+	int cnt = 0;
+
+	//cout << "lets count"<< endl;
+	for(int i=cur_row+1;i<h;i++){
+		//cout << row_alpha[i][mChar-'a'] << endl;
+		cnt += row_alpha[i][mChar-'a'];
 	}
 
-	return res;
+	node* temp = cursor;
+	while(temp->next){
+		//cout << temp->data << endl;
+		if(temp->data == mChar) cnt++; 
+		temp=temp->next;
+	}
+	cout << cnt << endl;
+	return cnt;
 }
