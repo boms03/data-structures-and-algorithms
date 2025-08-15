@@ -90,13 +90,17 @@ int main()
 }
 
 #include <queue>
+#include <cstring>
 #include <iostream>
+#include <vector>
 #define MAP_SIZE_MAX	350
 using namespace std;
 
 int map[MAP_SIZE_MAX][MAP_SIZE_MAX];
 int gates[MAP_SIZE_MAX][MAP_SIZE_MAX];
+vector<unordered_map<int,int>> adj(201);
 pair<int,int> gateID[201];
+
 bool removed[201];
 int maxStamina;;
 int n;
@@ -113,7 +117,7 @@ void init(int N, int mMaxStamina, int mMap[MAP_SIZE_MAX][MAP_SIZE_MAX])
         }
     }
     for(int i = 0; i <= 200; i++) {
-        gateID[i] = {-1, -1};
+        adj[i].clear(); 
     }
     memset(removed,0,sizeof(removed));
     maxStamina = mMaxStamina;
@@ -123,69 +127,95 @@ void init(int N, int mMaxStamina, int mMap[MAP_SIZE_MAX][MAP_SIZE_MAX])
 
 void addGate(int mGateID, int mRow, int mCol)
 {
-    gates[mRow][mCol]= mGateID;
-    gateID[mGateID]={mRow,mCol};
-	return;
+    gates[mRow][mCol] = mGateID;
+    gateID[mGateID] = {mRow, mCol};
+
+    static bool visited[MAP_SIZE_MAX][MAP_SIZE_MAX];
+    memset(visited, false, sizeof(visited));
+
+    struct Node { int y, x, dist; };
+    queue<Node> q;
+    q.push({mRow, mCol, 0});
+    visited[mRow][mCol] = true;
+
+    auto add_edge = [&](int a, int b, int w) {
+        auto it = adj[a].find(b);
+        if (it == adj[a].end()) {
+            adj[a][b] = w;
+        } else if (w < it->second) {
+            it->second = w;
+        }
+    };
+
+    while (!q.empty()) {
+        Node cur = q.front(); q.pop();
+        if (cur.dist == maxStamina) continue;
+
+        for (int d = 0; d < 4; d++) {
+            int ny = cur.y + dy[d];
+            int nx = cur.x + dx[d];
+            if (ny < 0 || ny >= n || nx < 0 || nx >= n) continue;
+            if (map[ny][nx] == 1) continue;
+
+            int gid = gates[ny][nx];
+            if (gid != 0 && gid != mGateID && !removed[gid]) {
+                add_edge(mGateID, gid, cur.dist + 1);
+                add_edge(gid, mGateID, cur.dist + 1);
+            }
+
+            if (!visited[ny][nx]) {
+                visited[ny][nx] = true;
+                q.push({ny, nx, cur.dist + 1});
+            }
+        }
+    }
 }
+
 
 void removeGate(int mGateID)
 {
+    //cout << "remove " << mGateID << endl;
     removed[mGateID]=true;
 	return;
 }
 
-struct State {
-    int x, y, stamina, time;
-};
-
 int getMinTime(int mStartGateID, int mEndGateID)
 {
-    //cout << "min" << endl;
-    bool visited_gate[201];
-    vector<pair<int,int>>next_gates;
-    memset(visited, false, sizeof(visited));
+    //cout << "start " << mStartGateID << "to" << mEndGateID << endl;
+    vector<int> dist(201, 1e9);
+    priority_queue<pair<int,int>, vector<pair<int,int>>, greater<pair<int,int>>> pq; 
+    pq.push({0,mStartGateID});
+    dist[mStartGateID]=0; 
+    while(!pq.empty()){
+        pair<int,int> top = pq.top();
+        pq.pop();
+        //cout << top.first << " " << top.second << endl;
 
-    int startX = gateID[mStartGateID].second;
-    int startY = gateID[mStartGateID].first;
-    int endX = gateID[mEndGateID].second;
-    int endY = gateID[mEndGateID].first;
-
-    queue<State>q;
-    q.push({startX, startY, maxStamina, 0});
-    visited[startY][startX][maxStamina] = true;
-    
-    while(!q.empty()){
-        State current = q.front();
-        q.pop();
-        
-        int x = current.x;
-        int y = current.y;
-        int stamina = current.stamina;
-        int time = current.time;
-
-        if (x == endX && y == endY) {
-            //cout << time << endl;
-            return time;
+        if (removed[top.second]) {
+            continue;
         }
 
-        for(int i=0;i<4;i++){
-            int nx = x + dx[i];
-            int ny = y + dy[i];
-            if (nx < 0 || nx >= n || ny < 0 || ny >= n) continue;
-            if (map[ny][nx] == 1) continue;
-            if (stamina <= 0) continue;
-            int newStamina = stamina - 1;
-            int newTime = time + 1;
+        if(top.second == mEndGateID){
+            //cout << top.first << endl;
+            return top.first;
+        }
 
-            int gateID = gates[ny][nx];
-            if (gateID != 0 && !removed[gateID] && gateID != mStartGateID && gateID != mEndGateID) {
-                newStamina = maxStamina;
+        if (top.first > dist[top.second]) {
+            continue;
+        }
+
+        for (auto &pair : adj[top.second]){
+
+            if (removed[pair.first]) {
+                continue;
             }
-            if (visited[ny][nx][newStamina]) continue;
-            visited[ny][nx][newStamina] = true;
-            q.push({nx, ny, newStamina, newTime});
+            if(dist[pair.first]>pair.second + top.first){
+                dist[pair.first] = pair.second + top.first;
+                pq.push({pair.second + top.first, pair.first});
+            }
         }
     }
+    //cout << -1 << endl;
 	return -1;
 }
 
