@@ -93,6 +93,7 @@ int main()
 #include <cstring>
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 #define MAP_SIZE_MAX	350
 using namespace std;
 

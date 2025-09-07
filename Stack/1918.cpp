@@ -32,7 +32,7 @@ int main() {
                 stk.push(c);
             }
             else {
-                while(!stk.empty() && stk.top() != '(' && 
+                while(!stk.empty() && 
                       getPriority(stk.top()) >= getPriority(c)) {
                     cout << stk.top();
                     stk.pop();
